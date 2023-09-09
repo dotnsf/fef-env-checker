@@ -3,6 +3,8 @@ var client = require( 'cheerio-httpcli' );
 client.set( 'browser', 'chrome' );
 client.set( 'referer', false );
 
+var crypto = require( 'crypto' );
+var request = require( 'request' );
 
 //. parameter
 var url = '';
@@ -10,6 +12,7 @@ if( process.argv.length > 2 ){
   url = process.argv[2];
 }
 
+require( 'dotenv' ).config();
 var couchdb_url = 'COUCHDB_URL' in process.env ? process.env.COUCHDB_URL : '';
 
 if( url ){
@@ -60,6 +63,12 @@ if( url ){
               var results = JSONdetect( body1 );
               //console.log( {results} );
               for( var i = 0; i < results.length; i ++ ){
+                var obj = {
+                  url: url,
+                  src: src1,
+                  json: results[i]
+                };
+                await store_db( obj );
                 console.log( i, results[i].text.substr( 0, 40 ) )
               }
             }catch( e ){
@@ -75,19 +84,7 @@ if( url ){
   console.log( '$ node crawler [URL]' );
 }
 
-/* テキストから JSON 表現を全て抜き出して配列で返す
-   考え方：
-   - テキストの先頭から１文字ずつ取り出して、、、
-     - シングルクォートで括られた文字列内でないことをチェックしつつ、
-     - ダブルクォートで括られた文字列内でもないことをチェックしつつ、
-     - '{' 文字が現れたら level ++ して文字位置と併せて { c: '{', level: level, n: i } を配列にプッシュ
-     - '}' 文字が現れたら { c: '}', level: level, n: i } を配列にプッシュしてから level -- する
-
-   - 作られたオブジェクトの配列を今度は末尾から１つずつ取り出して、、、
-     - { c: '{' } のオブジェクトが見つかったら、同じ level で { c: '}' } のオブジェクトを探し、
-     - ２つのオブジェクトに挟まれているオブジェクト文字列を抜き出して、
-     - JSON.parse() に成功するかどうかを調べ、成功したら返り値候補とする
-*/
+// テキストから JSON 表現を全て抜き出して配列で返す
 function JSONdetect( texts ){
   var jsons = [];
   var tmparray = [];
@@ -166,4 +163,31 @@ function JSONdetect( texts ){
   }
 
   return jsons;
+}
+
+async function store_db( obj ){
+  return new Promise( function( resolve, reject ){
+    if( couchdb_url ){
+      var id = crypto.randomUUID();
+      var t = ( new Date() ).getTime();
+      obj.created = t;
+      obj.updated = t;
+
+      var option = {
+        url: couchdb_url + '/' + id,
+        method: 'PUT',
+        json: obj,
+        headers: { 'Accept': 'application/json' }
+      };
+      request( option, ( err, res, body ) => {
+        if( err ){
+          resolve( { status: false, error: err } );
+        }else{
+          resolve( { status: true, result: body } );
+        }
+      });
+    }else{
+      resolve( { status: false, error: 'no couchdb_url' } );
+    }
+  });
 }
