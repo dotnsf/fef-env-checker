@@ -2,13 +2,15 @@
     "name": "fef-env-checker",
     "version": "0.0.1",
     "scripts": {
-        "start": "node crawler.js"
+        "start": "node app.js",
+        "crawl": "node crawler.js"
     },
     "dependencies": {
-        "axios": "^1.5.0",
         "cheerio-httpcli": "^0.8.3",
         "dotenv": "^16.3.1",
-        "request": "^2.88.2"
+        "ejs": "^3.1.9",
+        "express": "^4.18.2",
+        "pg": "^8.11.3"
     },
     "repository": {},
     "engines": {

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<title>FrontEnd Framework Env-value Checker</title>
+<script type="text/javascript" src="//code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+
+<link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
+<link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet"/>
+<script src="/cvi_busy_lib.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+<link rel="shortcut icon" href="/icon.png" type="image/png"/>
+<link rel="icon" href="/icon.png" type="image/png"/>
+<link rel="apple-touch-icon" href="/icon.png"/>
+
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="FEF Env Chacker"/>
+
+<style type="text/css">
+html, body{
+  text-align: center;
+  background-color: #fafafa;
+  font-size: 20px;
+  color: #333;
+}
+#jsontable{
+  font-size: 75%;
+  text-align: left;
+}
+tr.mycheckbox-tr td{
+  background-color: #cfc !important;
+}
+tr.mycheckbox-tr:has(input[type=checkbox]:checked) td{
+  background-color: #fcc !important;
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">
+    Front-End Env Checker
+  </a>
+  <ul class="navbar-nav mr-auto">
+  </ul>
+  <ul class="navbar-nav ml-auto">
+  </ul>
+</nav>
+
+<div class="container" id="main-div" style="margin-top: 50px;">
+  <div>
+    <table class="table">
+      <tr>
+        <td>
+          <input type="text" class="form-control" value="" id="crawl_url" placeholder="URL of FrontEnd framework application."/>
+        </td>
+        <td width="15%">
+          <button class="btn btn-primary" onClick="crawlUrl()">Crawl</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="accordion" id="main-accordion">
+
+<% for( var i = 0; i < urls.length; i ++ ){ %>
+    <div class="accordion-item">
+      <table class="table">
+        <tr>
+          <td>
+      <h2 class="accordion-header" id="accordion-<%= urls[i].id %>">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= urls[i].id %>" aria-expanded="false" aria-controls="collapse-<%= urls[i].id %>">
+          <%= urls[i].url %> 
+        </button>
+      </h2>
+          </td>
+          <td width="15%">
+        <button class="btn btn-danger" onClick="removeUrl('<%= urls[i].id %>')">Remove</button>
+          </td>
+        </tr>
+      </table>
+      <div id="collapse-<%= urls[i].id %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= urls[i].id %>" data-bs-parent="main-accordion">
+        <div class="accordion-body" id="accordion-body-<%= urls[i].id %>">
+
+        </div>
+      </div>
+    </div>
+<% } %>
+
+  </div>
+</div>
+
+<div class="container" id="debug-div" style="margin-top: 30px;">
+</div>
+
+<div class="modal bd-example-modal-lg fade" id="jsonModal" tabindex="-1" role="dialog" aria-labbelledby="jsonModal" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="jsonModalLabel"></h4>
+      </div>
+      <div class="modal-body" id="jsonmodal-body">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal bd-example-modal-lg fade" id="jsModal" tabindex="-1" role="dialog" aria-labbelledby="jsModal" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="jsModalLabel"></h4>
+      </div>
+      <div class="modal-body" id="jsmodal-body">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(function(){
+<% for( var i = 0; i < urls.length; i ++ ){ %>
+  $.ajax({
+    url: '/api/sources/<%= urls[i].id %>',
+    type: 'GET',
+    success: function( result ){
+      if( typeof result == 'string' ){
+         result = JSON.parse( result );
+      }
+      //console.log( {result} );  //. { status: true, url_id, sources: [ { id: 'xx', url_id: 'xxx', source: 'https://xxxxxx' }, .. ] }
+      if( result && result.status ){
+        var table = '<table class="table table-bordered">';
+        for( var i = 0; i < result.sources.length; i ++ ){
+          table += '<tr>'
+            + '<td>' + result.sources[i].source + '</td>'
+            + '<td><button class="btn btn-info" onClick="showJSONs(\'' + result.sources[i].id + '\')">JSONs</button></td>'
+            + '<td><button class="btn btn-warning" onClick="showFullSource(\'' + result.sources[i].id + '\')">JavaScript</button></td>'
+            + '</tr>';
+        }
+        table += '</table>';
+
+        $('#accordion-body-' + result.url_id).html( table );
+      }
+    },
+    error: function( e0, e1, e2 ){
+      console.log( e0, e1, e2 );
+    }
+  });
+<% } %>
+});
+
+
+
+function showJSONs( source_id ){
+	var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'processing..', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+  $.ajax({
+    url: '/api/jsons/' + source_id,
+    type: 'GET',
+    success: function( result ){
+      obj.remove();
+      obj = null;
+      if( typeof result == 'string' ){
+         result = JSON.parse( result );
+      }
+      //console.log( {result} );  //. { status: true, source_id: 'xxx', jsons: [ { id: 'xxxx', body: 'xxxxxxxxx' }, .. ] }
+      if( result && result.status ){
+        var table = '<table id="jsontable" class="table table-bordered">'
+          + '<thead><tr><th>#</th><th>body</th></tr></thead><tbody>'
+        for( var i = 0; i < result.jsons.length; i ++ ){
+          var checked = result.jsons[i].checked;
+          var body = result.jsons[i].body;
+          body = body.split( '<' ).join( '&lt;' ).split( '>' ).join( '&gt;' );
+
+          table += '<tr class="mycheckbox-tr">'
+            + '<td>'
+            + '<span id="jsonstart-' + result.jsons[i].id + '" style="display:none;">' + result.jsons[i].start_index + '</span>'
+            + '<span id="jsonend-' + result.jsons[i].id + '" style="display:none;">' + result.jsons[i].end_index + '</span>'
+            + '<input type="checkbox" id="mycheckbox-' + result.jsons[i].id + '" class="mycheckbox"' + ( checked ? ' checked' : '' ) + '/> '
+            + i + '</td>'
+            + '<td>' + body + '</td>'
+            + '</tr>';
+        }
+        table += '</tbody></table>';
+        //console.log( table );   //. ここまではできている
+
+        //$('#jsonModalLabel').html( result.source_id ); 
+        //$('#jsonmodal-body').html( table ); //. これがうまくいってない？ too big??
+        //$('#jsonModal').modal();
+        $('#debug-div').html( table );
+
+        $('.mycheckbox').change( function(){
+          var c = ( $(this).prop( 'checked' ) ? 1 : 0 );
+          var json_id = $(this).prop( 'id' );
+          if( json_id.startsWith( 'mycheckbox-' ) ){
+            json_id = json_id.substr( 11 );
+          }
+          //console.log( json_id, c );
+          $.ajax({
+            url: '/api/json/' + json_id + '/' + c,
+            type: 'POST',
+            success: function( result0 ){
+              console.log( {result0} );
+            },
+            error: function( e0, e1, e2 ){
+              console.log( e0, e1, e2 );
+            }
+          });
+        });
+      }
+    },
+    error: function( e0, e1, e2 ){
+      obj.remove();
+      obj = null;
+      console.log( e0, e1, e2 );
+    }
+  });
+}
+
+function showFullSource( source_id ){
+	var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'processing..', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+  $.ajax({
+    url: '/api/source/' + source_id,
+    type: 'GET',
+    success: function( result ){
+      obj.remove();
+      obj = null;
+      if( typeof result == 'string' ){
+         result = JSON.parse( result );
+      }
+  console.log( {result} );
+      //console.log( {result} );  //. { status: true, source_id: 'xxx', body: 'xxxxxxx...' }
+      if( result && result.status ){
+        var body = result.body;
+        body = body.split( '<' ).join( '&lt;' ).split( '>' ).join( '&gt;' );
+
+        //$('#jsModalLabel').html( result.source_id ); 
+        $('#jsmodal-body').html( body ); 
+        $('#jsModal').modal();
+      }
+    },
+    error: function( e0, e1, e2 ){
+      obj.remove();
+      obj = null;
+      console.log( e0, e1, e2 );
+    }
+  });
+}
+
+function crawlUrl(){
+	var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'processing..', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+  var crawl_url = $('#crawl_url').val();
+  if( crawl_url ){
+    $.ajax({
+      url: '/api/crawl?url=' + crawl_url,
+      type: 'POST',
+      success: function( result ){
+			  obj.remove();
+			  obj = null;
+        location.href = '/';
+      },
+      error: function( e0, e1, e2 ){
+			  obj.remove();
+			  obj = null;
+        console.log( e0, e1, e2 );
+      }
+    });
+  }
+}
+
+function removeUrl( url_id ){
+  if( confirm( 'Really delete?' ) ){
+	  var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'processing..', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+    $.ajax({
+      url: '/api/url/' + url_id,
+      type: 'DELETE',
+      success: function( result ){
+			  obj.remove();
+			  obj = null;
+        location.href = '/';
+      },
+      error: function( e0, e1, e2 ){
+			  obj.remove();
+			  obj = null;
+        console.log( e0, e1, e2 );
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -10,58 +10,23 @@ React.js 等のフロントエンドフレームワークを使って作られ�
 `$ node crawler [URL]`
 
 
-## Running couchdb services on docker
+## Running postgresql services on docker
 
-- `$ docker run -d --name couchdb -p 5984:5984 -e COUCHDB_USER=user -e COUCHDB_PASSWORD=pass couchdb`
+- `$ docker run --name fef-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=fefdb -e PGDATA=/var/lib/postgresql/data/pgdata -v ~/fef_pgmount:/var/lib/postgresql/data/pgdata -p 5432:5432 -d --restart unless-stopped postgres`
 
-- `http://localhost:5984/_utils/`
+- `$ docker exec -it fef-postgres bash`
 
-  - Create `db` database.
+- `/# psql "postgres://postgres:password@localhost:5432/fefdb"`
 
-  - Create following index doc:
+- `fefdb=# create table if not exists urls ( id varchar(50) not null primary key, url varchar(100) unique, created bigint default 0 );`
 
-```
-{
-  "_id": "_design/fefindex",
-  "language": "query",
-  "views": {
-    "count_by_url": {
-      "map": {
-        "fields": {
-          "name": "url"
-        },
-        "partial_filter_selector": {}
-      },
-      "reduce": "_count",
-      "options": {
-        "def": {
-          "fields": [
-            "url"
-          ]
-        }
-      }
-    },
-    "count_by_src": {
-      "map": {
-        "fields": {
-          "name": "src"
-        },
-        "partial_filter_selector": {}
-      },
-      "reduce": "_count",
-      "options": {
-        "def": {
-          "fields": [
-            "src"
-          ]
-        }
-      }
-    }
-  }
-}
-```
+- `fefdb=# create table if not exists sources ( id varchar(50) not null primary key, url_id varchar(50), source varchar(300) unique, body text, created bigint default 0 );`
 
-  - `http://localhost:5984/db/_design/fefindex/_view/count_by_url?group=true`
+- `fefdb=# create table if not exists jsons ( id varchar(50) not null primary key, source_id varchar(50), start_index int default 0, end_index int default 0, body text, checked int default 0, created bigint default 0 );`
+
+- `fefdb=# exit`
+
+- `/# exit`
 
 
 ## References
@@ -69,6 +34,8 @@ React.js 等のフロントエンドフレームワークを使って作られ�
 - https://qiita.com/naogify/items/a617ab2282830db70f1e
 
 - https://dotnsf.blog.jp/archives/1077038369.html
+
+- https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-creating-views-mapreduce&locale=ja
 
 
 ## Copyright
