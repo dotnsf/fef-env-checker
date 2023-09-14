@@ -6,8 +6,8 @@ create table if not exists urls ( id varchar(50) not null primary key, url varch
 
 /* sources */
 drop table sources;
-create table if not exists sources ( id varchar(50) not null primary key, url_id varchar(50), source varchar(300) unique, body text, created bigint default 0 );
+create table if not exists sources ( id varchar(50) not null primary key, url_id varchar(50), source varchar(300) unique, created bigint default 0 );
 
-/* jsons */
-drop table jsons;
-create table if not exists jsons ( id varchar(50) not null primary key, source_id varchar(50), start_index int default 0, end_index int default 0, body text, checked int default 0, created bigint default 0 );
+/* strings */
+drop table strings;
+create table if not exists strings ( id varchar(50) not null primary key, source_id varchar(50), string varchar(300) default '', checked int default 0, created bigint default 0 );

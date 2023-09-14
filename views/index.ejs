@@ -29,9 +29,15 @@ html, body{
   font-size: 20px;
   color: #333;
 }
-#jsontable{
+#stringtable{
   font-size: 75%;
   text-align: left;
+}
+tr.myradio-tr td{
+  background-color: #ccf !important;
+}
+tr.myradio-tr:has(input[type=radio]:checked) td{
+  background-color: #fcc !important;
 }
 tr.mycheckbox-tr td{
   background-color: #cfc !important;
@@ -136,17 +142,27 @@ $(function(){
       }
       //console.log( {result} );  //. { status: true, url_id, sources: [ { id: 'xx', url_id: 'xxx', source: 'https://xxxxxx' }, .. ] }
       if( result && result.status ){
-        var table = '<table class="table table-bordered">';
+        var table = '<table class="table">';
         for( var i = 0; i < result.sources.length; i ++ ){
-          table += '<tr>'
-            + '<td><a target="_blank" href="' + result.sources[i].source + '">' + result.sources[i].source + '</a></td>'
-            + '<td><button class="btn btn-info" onClick="showJSONs(\'' + result.sources[i].id + '\')">JSONs</button></td>'
-            //+ '<td><button class="btn btn-warning" onClick="showFullSource(\'' + result.sources[i].id + '\')">JavaScript</button></td>'
+          table += '<tr class="myradio-tr">'
+            + '<td style="text-align: left;">'
+            + '<input type="radio" id="myradio-' + result.sources[i].id + '" class="myradio"/> '
+            + result.sources[i].source + '</td>'
+            + '<td width="15%"><a class="btn btn-success" target="_blank" href="' + result.sources[i].source + '">Open</a></td>'
             + '</tr>';
         }
         table += '</table>';
 
         $('#accordion-body-' + result.url_id).html( table );
+
+        $('.myradio').change( function(){
+          var c = ( $(this).prop( 'checked' ) ? 1 : 0 );
+          var source_id = $(this).prop( 'id' );
+          if( source_id.startsWith( 'myradio-' ) ){
+            source_id = source_id.substr( 8 );
+            showStrings( source_id );
+          }
+        });
       }
     },
     error: function( e0, e1, e2 ){
@@ -158,10 +174,10 @@ $(function(){
 
 
 
-function showJSONs( source_id ){
+function showStrings( source_id ){
 	var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'processing..', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
   $.ajax({
-    url: '/api/jsons/' + source_id,
+    url: '/api/strings/' + source_id,
     type: 'GET',
     success: function( result ){
       obj.remove();
@@ -171,20 +187,18 @@ function showJSONs( source_id ){
       }
       //console.log( {result} );  //. { status: true, source_id: 'xxx', jsons: [ { id: 'xxxx', body: 'xxxxxxxxx' }, .. ] }
       if( result && result.status ){
-        var table = '<table id="jsontable" class="table table-bordered">'
-          + '<thead><tr><th>#</th><th>start</th><th>end</th><th>body</th></tr></thead><tbody>'
-        for( var i = 0; i < result.jsons.length; i ++ ){
-          var checked = result.jsons[i].checked;
-          var body = result.jsons[i].body;
-          body = body.split( '<' ).join( '&lt;' ).split( '>' ).join( '&gt;' );
+        var table = '<table id="stringtable" class="table table-bordered">'
+          + '<thead><tr><th>#</th><th>string</th></tr></thead><tbody>'
+        for( var i = 0; i < result.strings.length; i ++ ){
+          var checked = result.strings[i].checked;
+          var string = result.strings[i].string;
+          //string = string.split( '<' ).join( '&lt;' ).split( '>' ).join( '&gt;' );
 
           table += '<tr class="mycheckbox-tr">'
             + '<td>'
-            + '<input type="checkbox" id="mycheckbox-' + result.jsons[i].id + '" class="mycheckbox"' + ( checked ? ' checked' : '' ) + '/> '
+            + '<input type="checkbox" id="mycheckbox-' + result.strings[i].id + '" class="mycheckbox"' + ( checked ? ' checked' : '' ) + '/> '
             + i + '</td>'
-            + '<td id="jsonstart-' + result.jsons[i].id + '">' + result.jsons[i].start_index + '</td>'
-            + '<td id="jsonend-' + result.jsons[i].id + '">' + result.jsons[i].end_index + '</td>'
-            + '<td>' + body + '</td>'
+            + '<td id="string-' + result.strings[i].id + '">' + result.strings[i].string + '</td>'
             + '</tr>';
         }
         table += '</tbody></table>';
@@ -197,13 +211,13 @@ function showJSONs( source_id ){
 
         $('.mycheckbox').change( function(){
           var c = ( $(this).prop( 'checked' ) ? 1 : 0 );
-          var json_id = $(this).prop( 'id' );
-          if( json_id.startsWith( 'mycheckbox-' ) ){
-            json_id = json_id.substr( 11 );
+          var string_id = $(this).prop( 'id' );
+          if( string_id.startsWith( 'mycheckbox-' ) ){
+            string_id = string_id.substr( 11 );
           }
-          //console.log( json_id, c );
+          //console.log( string_id, c );
           $.ajax({
-            url: '/api/json/' + json_id + '/' + c,
+            url: '/api/string/' + string_id + '/' + c,
             type: 'POST',
             success: function( result0 ){
               console.log( {result0} );
