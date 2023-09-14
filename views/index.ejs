@@ -138,9 +138,9 @@ $(function(){
         var table = '<table class="table table-bordered">';
         for( var i = 0; i < result.sources.length; i ++ ){
           table += '<tr>'
-            + '<td>' + result.sources[i].source + '</td>'
+            + '<td><a target="_blank" href="' + result.sources[i].source + '">' + result.sources[i].source + '</a></td>'
             + '<td><button class="btn btn-info" onClick="showJSONs(\'' + result.sources[i].id + '\')">JSONs</button></td>'
-            + '<td><button class="btn btn-warning" onClick="showFullSource(\'' + result.sources[i].id + '\')">JavaScript</button></td>'
+            //+ '<td><button class="btn btn-warning" onClick="showFullSource(\'' + result.sources[i].id + '\')">JavaScript</button></td>'
             + '</tr>';
         }
         table += '</table>';
@@ -171,7 +171,7 @@ function showJSONs( source_id ){
       //console.log( {result} );  //. { status: true, source_id: 'xxx', jsons: [ { id: 'xxxx', body: 'xxxxxxxxx' }, .. ] }
       if( result && result.status ){
         var table = '<table id="jsontable" class="table table-bordered">'
-          + '<thead><tr><th>#</th><th>body</th></tr></thead><tbody>'
+          + '<thead><tr><th>#</th><th>start</th><th>end</th><th>body</th></tr></thead><tbody>'
         for( var i = 0; i < result.jsons.length; i ++ ){
           var checked = result.jsons[i].checked;
           var body = result.jsons[i].body;
@@ -179,10 +179,10 @@ function showJSONs( source_id ){
 
           table += '<tr class="mycheckbox-tr">'
             + '<td>'
-            + '<span id="jsonstart-' + result.jsons[i].id + '" style="display:none;">' + result.jsons[i].start_index + '</span>'
-            + '<span id="jsonend-' + result.jsons[i].id + '" style="display:none;">' + result.jsons[i].end_index + '</span>'
             + '<input type="checkbox" id="mycheckbox-' + result.jsons[i].id + '" class="mycheckbox"' + ( checked ? ' checked' : '' ) + '/> '
             + i + '</td>'
+            + '<td id="jsonstart-' + result.jsons[i].id + '">' + result.jsons[i].start_index + '</td>'
+            + '<td id="jsonend-' + result.jsons[i].id + '">' + result.jsons[i].end_index + '</td>'
             + '<td>' + body + '</td>'
             + '</tr>';
         }
