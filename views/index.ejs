@@ -74,14 +74,15 @@ tr.mycheckbox-tr:has(input[type=checkbox]:checked) td{
       <table class="table">
         <tr>
           <td>
-      <h2 class="accordion-header" id="accordion-<%= urls[i].id %>">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= urls[i].id %>" aria-expanded="false" aria-controls="collapse-<%= urls[i].id %>">
-          <%= urls[i].url %> 
-        </button>
-      </h2>
+            <h2 class="accordion-header" id="accordion-<%= urls[i].id %>">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= urls[i].id %>" aria-expanded="false" aria-controls="collapse-<%= urls[i].id %>">
+                <%= urls[i].url %> 
+              </button>
+            </h2>
           </td>
-          <td width="15%">
-        <button class="btn btn-danger" onClick="removeUrl('<%= urls[i].id %>','<%= urls[i].url %>')">Remove</button>
+          <td width="30%">
+            <a class="btn btn-success" target="_blank" href="<%= urls[i].url %>">Open</a>
+            <button class="btn btn-danger" onClick="removeUrl('<%= urls[i].id %>','<%= urls[i].url %>')">Remove</button>
           </td>
         </tr>
       </table>
