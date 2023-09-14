@@ -81,7 +81,7 @@ tr.mycheckbox-tr:has(input[type=checkbox]:checked) td{
       </h2>
           </td>
           <td width="15%">
-        <button class="btn btn-danger" onClick="removeUrl('<%= urls[i].id %>')">Remove</button>
+        <button class="btn btn-danger" onClick="removeUrl('<%= urls[i].id %>','<%= urls[i].url %>')">Remove</button>
           </td>
         </tr>
       </table>
@@ -273,8 +273,8 @@ function crawlUrl(){
   }
 }
 
-function removeUrl( url_id ){
-  if( confirm( 'Really delete?' ) ){
+function removeUrl( url_id, url ){
+  if( confirm( 'Really delete "' + url + '" ?' ) ){
 	  var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'processing..', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
     $.ajax({
       url: '/api/url/' + url_id,
